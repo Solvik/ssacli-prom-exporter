@@ -146,13 +146,13 @@ class HPRaidController(RaidController):
         return self.data["Controller Status"]
 
     def get_controller_cache(self):
-        if self.data['Cache Board Present'] == 'False':
+        if self.data["Cache Board Present"] == "False":
             return None
         ret = {
-            'status': self.data['Cache Status'],
-            'size': self.data['Total Cache Size'],
-            'available': self.data['Total Cache Memory Available'],
-            }
+            "status": self.data["Cache Status"],
+            "size": self.data["Total Cache Size"],
+            "available": self.data["Total Cache Memory Available"],
+        }
         return ret
 
     def get_temperature(self):
@@ -227,8 +227,16 @@ class HPRaidController(RaidController):
                     {"src": "Status", "func": isok},
                     {"src": "Power On Hours", "func": int},
                     {"src": "Usage remaining", "func": topercent},
-                    {"src": "Current Temperature (C)", "dst": "Temperature", "func": int},
-                    {"src": "Maximum Temperature (C)", "dst": "Max Temperature", "func": int}
+                    {
+                        "src": "Current Temperature (C)",
+                        "dst": "Temperature",
+                        "func": int,
+                    },
+                    {
+                        "src": "Maximum Temperature (C)",
+                        "dst": "Max Temperature",
+                        "func": int,
+                    },
                 ]
                 for attr in attrs:
                     dst = attr["src"] if not attr.get("dst") else attr.get("dst")
@@ -378,13 +386,11 @@ def run(args):
             isok(controller.get_controller_status())
         )
         hp_smart_array_controller_cache_status.labels(**labels).set(
-            isok(cache['status'])
+            isok(cache["status"])
         )
-        hp_smart_array_controller_cache_size.labels(**labels).set(
-            float(cache['size'])
-        )
+        hp_smart_array_controller_cache_size.labels(**labels).set(float(cache["size"]))
         hp_smart_array_controller_cache_available.labels(**labels).set(
-            float(cache['available'])
+            float(cache["available"])
         )
         for ld in controller.get_logical_drives():
             labels = {
@@ -403,7 +409,9 @@ def run(args):
             }
             hp_smart_array_disk_status.labels(**labels).set(disk["Status"])
             hp_smart_array_disk_temperature.labels(**labels).set(disk["Temperature"])
-            hp_smart_array_disk_max_temperature.labels(**labels).set(disk["Max Temperature"])
+            hp_smart_array_disk_max_temperature.labels(**labels).set(
+                disk["Max Temperature"]
+            )
             if "Power On Hours" in disk.keys():
                 hp_smart_array_disk_power_on_hours.labels(**labels).set(
                     disk["Power On Hours"]
@@ -431,6 +439,7 @@ def main():
     except Exception as e:
         print(e)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
