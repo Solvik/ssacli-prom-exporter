@@ -166,6 +166,8 @@ class HPRaidController(RaidController):
         output = subprocess.getoutput(
             "ssacli ctrl slot={slot} ld all show detail".format(slot=self.data["Slot"])
         )
+        if "Error: The specified device does not have any logical drives." in output:
+            return ret        
         lines = output.split("\n")
         lines = list(filter(None, lines))
         j = -1
@@ -173,7 +175,6 @@ class HPRaidController(RaidController):
             info_dict, j = _get_dict(lines, j + 1, 0)
         key = next(iter(info_dict))
 
-        ret = []
         for array, logical_disk in info_dict[key].items():
             for _, ld_attr in logical_disk.items():
                 ld = {"Array": array.split()[1]}
