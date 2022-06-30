@@ -168,7 +168,7 @@ class HPRaidController(RaidController):
             "ssacli ctrl slot={slot} ld all show detail".format(slot=self.data["Slot"])
         )
         if "Error: The specified device does not have any logical drives." in output:
-            return ret        
+            return ret
         lines = output.split("\n")
         lines = list(filter(None, lines))
         j = -1
@@ -347,6 +347,11 @@ def run(args):
         ["bay", "box", "port", "serial"],
         registry=registry,
     )
+    hp_smart_array_disk_count = Gauge(
+        "hp_smart_array_disk_count",
+        "Number of physical disks",
+        registry=registry,
+    )
     hp_smart_array_disk_temperature = Gauge(
         "hp_smart_array_disk_temperature",
         "Temperature of disk in C",
@@ -403,6 +408,7 @@ def run(args):
             hp_smart_array_ld_caching.labels(**labels).set(ld["Caching"])
 
         disks = controller.get_physical_disks()
+        hp_smart_array_disk_count.set(len(disks))
         for disk in disks:
             labels = {
                 "bay": disk["Bay"],
