@@ -146,7 +146,8 @@ class HPRaidController(RaidController):
         return self.data["Controller Status"]
 
     def get_controller_cache(self):
-        if self.data["Cache Board Present"] == "False":
+        present = self.data.get('Cache Board Present')
+        if not present or present == "False":
             return None
         ret = {
             "status": self.data["Cache Status"],
@@ -386,13 +387,14 @@ def run(args):
         hp_smart_array_controller_status.labels(**labels).set(
             isok(controller.get_controller_status())
         )
-        hp_smart_array_controller_cache_status.labels(**labels).set(
-            isok(cache["status"])
-        )
-        hp_smart_array_controller_cache_size.labels(**labels).set(float(cache["size"]))
-        hp_smart_array_controller_cache_available.labels(**labels).set(
-            float(cache["available"])
-        )
+        if cache:
+            hp_smart_array_controller_cache_status.labels(**labels).set(
+                isok(cache["status"])
+            )
+            hp_smart_array_controller_cache_size.labels(**labels).set(float(cache["size"]))
+            hp_smart_array_controller_cache_available.labels(**labels).set(
+                float(cache["available"])
+            )
         for ld in controller.get_logical_drives():
             labels = {
                 "array": ld["Array"],
