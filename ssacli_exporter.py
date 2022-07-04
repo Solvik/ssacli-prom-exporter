@@ -126,9 +126,10 @@ def _get_dict(lines, start_index, indentation):
 
 
 class HPRaidController(RaidController):
-    def __init__(self, controller_name, data):
+    def __init__(self, controller_name, data, *args, **kwargs):
         self.controller_name = controller_name
         self.data = data
+        self.bin_path = kwargs.get("bin_path")
 
     def get_product_name(self):
         return self.controller_name
@@ -165,7 +166,9 @@ class HPRaidController(RaidController):
     def get_logical_drives(self):
         ret = []
         output = subprocess.getoutput(
-            "ssacli ctrl slot={slot} ld all show detail".format(slot=self.data["Slot"])
+            "{bin_path} ctrl slot={slot} ld all show detail".format(
+                bin_path=self.bin_path,
+                slot=self.data["Slot"])
         )
         if "Error: The specified device does not have any logical drives." in output:
             return ret
@@ -199,7 +202,9 @@ class HPRaidController(RaidController):
     def get_physical_disks(self):
         ret = []
         output = subprocess.getoutput(
-            "ssacli ctrl slot={slot} pd all show detail".format(slot=self.data["Slot"])
+            "{bin_path} ctrl slot={slot} pd all show detail".format(
+                bin_path=self.bin_path,
+                slot=self.data["Slot"])
         )
         lines = output.split("\n")
         lines = list(filter(None, lines))
@@ -273,8 +278,9 @@ def topercent(value):
 
 
 class HPRaid(Raid):
-    def __init__(self):
-        self.output = subprocess.getoutput("ssacli ctrl all show detail")
+    def __init__(self, *args, **kwargs):
+        self.bin_path = kwargs.get("bin_path")
+        self.output = subprocess.getoutput(f"{self.bin_path} ctrl all show detail")
         self.controllers = []
         self.convert_to_dict()
 
@@ -290,7 +296,8 @@ class HPRaid(Raid):
                 if product_name:
                     self.controllers.append(
                         HPRaidController(
-                            product_name.group(1), info_dict[_product_name]
+                            product_name.group(1), info_dict[_product_name],
+                            bin_path=self.bin_path,
                         )
                     )
 
@@ -381,7 +388,7 @@ def run(args):
         registry=registry,
     )
 
-    r = HPRaid()
+    r = HPRaid(bin_path=args.bin_path)
     controllers = r.get_controllers()
     for controller in controllers:
         labels = {
@@ -435,6 +442,11 @@ def run(args):
 def main():
     parser = argparse.ArgumentParser(
         description="HP SmartArray cli exporter for Prometheus"
+    )
+    parser.add_argument(
+        "--bin-path",
+        default="/usr/sbin/ssacli",
+        help="Binary path for ssacli/hpacucli binary",
     )
     parser.add_argument(
         "--output",
