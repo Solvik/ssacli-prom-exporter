@@ -138,13 +138,13 @@ class HPRaidController(RaidController):
         return "HP"
 
     def get_serial_number(self):
-        return self.data["Serial Number"]
+        return self.data.get("Serial Number", "")
 
     def get_firmware_version(self):
-        return self.data["Firmware Version"]
+        return self.data.get("Firmware Version", "")
 
     def get_controller_status(self):
-        return self.data["Controller Status"]
+        return self.data.get("Controller Status")
 
     def get_controller_cache(self):
         present = self.data.get('Cache Board Present')
@@ -315,25 +315,25 @@ def run(args):
     hp_smart_array_controller_status = Gauge(
         "hp_smart_array_controller_status",
         "Controller status",
-        ["serial", "firmware_version"],
+        ["product_name", "serial", "firmware_version"],
         registry=registry,
     )
     hp_smart_array_controller_cache_status = Gauge(
         "hp_smart_array_controller_cache_status",
         "Controller Cache Status",
-        ["serial", "firmware_version"],
+        ["product_name", "serial", "firmware_version"],
         registry=registry,
     )
     hp_smart_array_controller_cache_size = Gauge(
         "hp_smart_array_controller_cache_size",
         "Controller Cache Size in GB",
-        ["serial", "firmware_version"],
+        ["product_name", "serial", "firmware_version"],
         registry=registry,
     )
     hp_smart_array_controller_cache_available = Gauge(
         "hp_smart_array_controller_cache_available",
         "Controller Cache available in GB",
-        ["serial", "firmware_version"],
+        ["product_name", "serial", "firmware_version"],
         registry=registry,
     )
     hp_smart_array_disk_power_on_hours = Gauge(
@@ -394,6 +394,7 @@ def run(args):
         labels = {
             "serial": controller.get_serial_number(),
             "firmware_version": controller.get_firmware_version(),
+            "product_name": controller.get_product_name(),
         }
         cache = controller.get_controller_cache()
         hp_smart_array_controller_status.labels(**labels).set(
