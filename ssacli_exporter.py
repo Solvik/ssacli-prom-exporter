@@ -280,7 +280,7 @@ def topercent(value):
 class HPRaid(Raid):
     def __init__(self, *args, **kwargs):
         self.bin_path = kwargs.get("bin_path")
-        self.output = subprocess.getoutput(f"{self.bin_path} ctrl all show detail")
+        self.output = subprocess.getoutput(self.bin_path + " ctrl all show detail")
         self.controllers = []
         self.convert_to_dict()
 
