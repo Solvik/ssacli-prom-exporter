@@ -425,10 +425,14 @@ def run(args):
                 "serial": disk["SN"],
             }
             hp_smart_array_disk_status.labels(**labels).set(disk["Status"])
-            hp_smart_array_disk_temperature.labels(**labels).set(disk["Temperature"])
-            hp_smart_array_disk_max_temperature.labels(**labels).set(
-                disk["Max Temperature"]
-            )
+            if "Temperature" in disk.keys():
+                hp_smart_array_disk_temperature.labels(**labels).set(
+                    disk["Temperature"]
+                )
+            if "Max Temperature" in disk.keys():
+                hp_smart_array_disk_max_temperature.labels(**labels).set(
+                    disk["Max Temperature"]
+                )
             if "Power On Hours" in disk.keys():
                 hp_smart_array_disk_power_on_hours.labels(**labels).set(
                     disk["Power On Hours"]
