@@ -280,7 +280,7 @@ def topercent(value):
 class HPRaid(Raid):
     def __init__(self, *args, **kwargs):
         self.bin_path = kwargs.get("bin_path")
-        self.output = subprocess.getoutput(f"{self.bin_path} ctrl all show detail")
+        self.output = subprocess.getoutput(self.bin_path + " ctrl all show detail")
         self.controllers = []
         self.convert_to_dict()
 
@@ -425,10 +425,14 @@ def run(args):
                 "serial": disk["SN"],
             }
             hp_smart_array_disk_status.labels(**labels).set(disk["Status"])
-            hp_smart_array_disk_temperature.labels(**labels).set(disk["Temperature"])
-            hp_smart_array_disk_max_temperature.labels(**labels).set(
-                disk["Max Temperature"]
-            )
+            if "Temperature" in disk.keys():
+                hp_smart_array_disk_temperature.labels(**labels).set(
+                    disk["Temperature"]
+                )
+            if "Max Temperature" in disk.keys():
+                hp_smart_array_disk_max_temperature.labels(**labels).set(
+                    disk["Max Temperature"]
+                )
             if "Power On Hours" in disk.keys():
                 hp_smart_array_disk_power_on_hours.labels(**labels).set(
                     disk["Power On Hours"]
